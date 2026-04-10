@@ -34,10 +34,10 @@ command\_id:指令的唯一标识,可以设为0
 
 end\_pose:目的地的坐标,此坐标是以自车为参考系的坐标,可以通过鼠标在Dreamview上获取
 
-![在这里插入图片描述](images/1.png)
+!\[在这里插入图片描述]\(images/1.png null)
 
-通过task_manager模块请求消息代码如下:
-modules/task_manager/task_manager_component.cc
+通过task\_manager模块请求消息代码如下:
+modules/task\_manager/task\_manager\_component.cc
 
 ```cpp
 lane_follow_command_client_ =
@@ -46,13 +46,16 @@ task_manager_conf.topic_config().lane_follow_command_topic());
 ... ... 
 lane_follow_command_client_->SendRequest(lane_follow_command);
 ```
-首先,创建lane_follow_command的client,然后中间省略部分是在获取上面介绍的LaneFollowCommand类型的数据,一般传入的就是目的地坐标,有时也会传入经由地坐标,然后通过SendRequest把请求算路的消息发出去.
+
+首先,创建lane\_follow\_command的client,然后中间省略部分是在获取上面介绍的LaneFollowCommand类型的数据,一般传入的就是目的地坐标,有时也会传入经由地坐标,然后通过SendRequest把请求算路的消息发出去.
 
 因为本专栏主要介绍的是pnc的算法部分,所以对于系统流程的部分不过多介绍,大家可以自己去根据提供的代码文件阅读.
-#### 2.external_command模块负责接收外部下发算路的指令
+
+#### 2.external\_command模块负责接收外部下发算路的指令
+
 接收函数
 
-modules/external_command/command_processor/command_processor_base/motion_command_processor_base.h
+modules/external\_command/command\_processor/command\_processor\_base/motion\_command\_processor\_base.h
 
 ```cpp
 std::shared_ptr<cyber::Service<T, CommandStatus>> command_service_;
@@ -63,20 +66,24 @@ command_service_ = node->CreateService<T, CommandStatus>(
       this->OnCommand(command, status);
     });
 ```
-在external_command模块中,通过Service通信方式的回调函数,接收算路请求指令,然后通过OnCommand函数对请求指令进行处理,该函数有两个参数
+
+在external\_command模块中,通过Service通信方式的回调函数,接收算路请求指令,然后通过OnCommand函数对请求指令进行处理,该函数有两个参数
 
 command:输入参数,表示算路请求指令
 
 status:输出参数,请求指令处理状态
 
 接下来介绍OnCommand函数中主要处理逻辑
+
 ##### (1) Convert函数-构建算路请求所需的数据
-modules/external_command/command_processor/lane_follow_command_processor/lane_follow_command_processor.cc
+
+modules/external\_command/command\_processor/lane\_follow\_command\_processor/lane\_follow\_command\_processor.cc
 
 在Convert函数,分两种情况,第一种在算路请求指令中传入了起点坐标,第二种在算路请求中没有传入起点坐标,这个时候会根据当前自车位置构建一个
 
-1)算路指令中,没有设置起点坐标情况下的起点构建逻辑
+1\)算路指令中,没有设置起点坐标情况下的起点构建逻辑
 首先,说一下Convert函数,最终要输出的数据的数据类型是RoutingRequest
+
 ```cpp
 message RoutingRequest {
   optional apollo.common.Header header = 1;
@@ -91,7 +98,9 @@ message RoutingRequest {
   optional bool is_start_pose_set = 7 [default = false];
 }
 ```
+
 比较重要的成员就是waypoint,它是repeated的,相当于动态数组,它存储的数据通常是全局路线的起点终点数据,有时还会包括途径点.
+
 ```cpp
 message LaneWaypoint {
   optional string id = 1;
@@ -103,9 +112,11 @@ message LaneWaypoint {
   optional double heading = 4;
 }
 ```
+
 那如果算路指令中没有传入起点坐标,程序就会通过SetStartPose函数构建一个,然后存到RoutingRequest结果中的waypoint中,作为计算全局路线的起点数据
 
-modules/external_command/command_processor/command_processor_base/motion_command_processor_base.h
+modules/external\_command/command\_processor/command\_processor\_base/motion\_command\_processor\_base.h
+
 ```cpp
 bool MotionCommandProcessorBase<T>::SetStartPose(
     std::shared_ptr<apollo::routing::RoutingRequest>& routing_request) const {
@@ -119,7 +130,9 @@ bool MotionCommandProcessorBase<T>::SetStartPose(
   return true;
 }
 ```
+
 在GetVehicleLaneWayPoint函数中首先是从location模块获取自车坐标(x, y, heading)此坐标是基于自车坐标系也就是以后轴中心为原心的坐标
+
 ```cpp
 bool LaneWayTool::GetVehicleLaneWayPoint(
     apollo::routing::LaneWaypoint *lane_way_point) const {
@@ -139,17 +152,20 @@ bool LaneWayTool::GetVehicleLaneWayPoint(
   return ConvertToLaneWayPoint(pose, lane_way_point);
 }
 ```
+
 ConvertToLaneWayPoint函数中分两个逻辑,一个是如果pose中包含heading,另一个是不包含heading
 
 pose中包含heading的情况,匹配距离自车最近的车道
-modules/map/hdmap/hdmap_impl.cc
+modules/map/hdmap/hdmap\_impl.cc
 
 ###### GetNearestLaneWithHeading函数
+
 在GetLanesWithHeading中,首先通过GetLanes函数,以当前自车位置为圆心,指定范围为半径,从map模块通过KDTree(不在pnc算法解析范围)算法检索范围内所有车道,然后
 
 条件1:检查自车位置到投影点距离是否在半径范围内,
 
 条件2还要检查车道朝向与车头朝向角度差是否在一定阈值范围内
+
 ```cpp
 for (auto& lane : all_lanes) {
   Vec2d proj_pt(0.0, 0.0);
@@ -158,26 +174,27 @@ for (auto& lane : all_lanes) {
   double dis = lane->DistanceTo(point, &proj_pt, &s_offset, &s_offset_index);
 }
 ```
-double dis = lane->DistanceTo(point, &proj_pt, &s_offset, &s_offset_index);
+
+double dis = lane->DistanceTo(point, \&proj\_pt, \&s\_offset, \&s\_offset\_index);
 
 dis:自车位置到车道上投影点距离
 
 point:自车坐标
 
-proj_pt:车道上自车投影点距离
+proj\_pt:车道上自车投影点距离
 
-s_offset:投影点在当前车道上的累积纵向距离也就是说,是从这根车道的起点开始计算的累计纵向距离,根据下面图示可以看到lane的结构图,一根lane由若干point构成,两个点构成一段segment.
+s\_offset:投影点在当前车道上的累积纵向距离也就是说,是从这根车道的起点开始计算的累计纵向距离,根据下面图示可以看到lane的结构图,一根lane由若干point构成,两个点构成一段segment.
 
-s_offset_index:离自车位置最近的segment是车道上的第几个segment的索引
+s\_offset\_index:离自车位置最近的segment是车道上的第几个segment的索引
 
-modules/common/math/line_segment2d.cc
+modules/common/math/line\_segment2d.cc
 
 LineSegment2d::DistanceTo函数的具体实现说明
 
-![在这里插入图片描述](images/2.png)
-
+!\[在这里插入图片描述]\(images/2.png null)
 
 检查车道朝向与车头朝向角度差是否在一定阈值范围内
+
 ```cpp
 if (dis <= distance) {
   double heading_diff =
@@ -188,7 +205,8 @@ if (dis <= distance) {
   }
 }
 ```
-确保输出角度在 [−π,π]弧度范围内,这也是角度差的取值范围
+
+确保输出角度在 \[−π,π]弧度范围内,这也是角度差的取值范围
 
 获取到所有符合上面两个条件的lane后,就找到距离自车位置最近的那段segment
 
@@ -206,15 +224,17 @@ if (dis <= distance) {
     }
   }
 ```
+
 然后通过
-![在这里插入图片描述](images/3.png)
+!\[在这里插入图片描述]\(images/3.png null)
 
 通过最近的那段segment的起点指向自车位置的向量,与最近这段segment的单位向量的叉积(向量积),就可以求出自车位置点到线段segment的有向距离,如果为正,表示自车在车道左侧,负表示自车在车道右侧
 
-'''cpp
-*nearest_l =
-  segment_2d.unit_direction().CrossProd(point - segment_2d.start());
-'''
+```cpp
+  *nearest_l =
+      segment_2d.unit_direction().CrossProd(point - segment_2d.start());
+```
+
 pose中不包含heading的情况,匹配距离自车最近的车道
 GetNearestLane函数
 与GetNearestLaneWithHeading的不同就是没有半径距离和车道朝向与自车车头朝向角度差的条件限制
@@ -244,7 +264,8 @@ int HDMapImpl::GetNearestLane(const Vec2d& point,
   return 0;
 }
 ```
-因为距离自车最近的车道nearest_lane已经通过函数GetNearestLaneWithHeading找到了,投影点在当前车道的纵向距离nearest_s也求出来了,
+
+因为距离自车最近的车道nearest\_lane已经通过函数GetNearestLaneWithHeading找到了,投影点在当前车道的纵向距离nearest\_s也求出来了,
 
 ```cpp
 int HDMapImpl::GetNearestLaneWithHeading(
@@ -252,6 +273,7 @@ int HDMapImpl::GetNearestLaneWithHeading(
     const double max_heading_difference, LaneInfoConstPtr* nearest_lane,
     double* nearest_s, double* nearest_l)
 ```
+
 ```cpp
 lane_way_point->set_id(nearest_lane->id().id());
 lane_way_point->set_s(nearest_s);
@@ -259,11 +281,13 @@ auto *lane_way_pose = lane_way_point->mutable_pose();
 lane_way_pose->set_x(pose.x());
 lane_way_pose->set_y(pose.y());
 ```
+
 这样LaneWaypoint类型的起点信息就构建完成了
 
-本专栏只考虑public_road的场景不考虑停车场景,所以lane_way_tool->IsParkandgoScenario()内的逻辑不考虑
+本专栏只考虑public\_road的场景不考虑停车场景,所以lane\_way\_tool->IsParkandgoScenario()内的逻辑不考虑
 
 下面的逻辑是构造完起点的LaneWaypoint类型后,就使用上面构造起点相同的方式去构建途径点和目的地的LaneWaypoint类型数据
+
 ```cpp
 for (const auto& way_point : command->way_point()) {
     if (!lane_way_tool->ConvertToLaneWayPoint(
@@ -282,3 +306,4 @@ for (const auto& way_point : command->way_point()) {
   }
 
 ```
+
