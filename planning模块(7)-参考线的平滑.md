@@ -1,6 +1,6 @@
 # planning模块(7)-参考线的平滑
 
-上一篇[planning模块(6)-参考线的平滑(二次规划)](https://blog.csdn.net/qq_23613819/article/details/155615105?spm=1001.2014.3001.5501)已经介绍了使用二次规划进行参考线平滑的方法.并且在上一篇中还提到了CSC矩阵,感兴趣的可以读一下[CSC(Compressed Sparse Column)矩阵](https://blog.csdn.net/qq_23613819/article/details/155749457)
+上一篇[planning模块(6)-参考线的平滑(二次规划)](https://github.com/AELe/Apollo-PNC-algorithm-analysis/blob/main/planning%E6%A8%A1%E5%9D%97(6)-%E5%8F%82%E8%80%83%E7%BA%BF%E7%9A%84%E5%B9%B3%E6%BB%91(%E4%BA%8C%E6%AC%A1%E8%A7%84%E5%88%92).md)已经介绍了使用二次规划进行参考线平滑的方法.并且在上一篇中还提到了CSC矩阵,感兴趣的可以读一下[CSC(Compressed Sparse Column)矩阵](https://blog.csdn.net/qq_23613819/article/details/155749457)
 
 接下来,继续介绍获取到平滑的参考点后的流程
 
