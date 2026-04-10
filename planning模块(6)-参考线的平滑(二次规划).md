@@ -1,6 +1,6 @@
 # planning模块(6)-参考线的平滑(二次规划)
 
-[planning模块(5)-参考线的平滑](https://blog.csdn.net/qq_23613819/article/details/155504404?spm=1001.2014.3001.5501)上一篇已经介绍了采样点生成锚点数据的过程,并且将所有采样点生成的锚点数据设置到了平滑器中.接下来继续介绍使用二次规划平滑参考线的算法过程.
+[planning模块(5)-参考线的平滑](https://github.com/AELe/Apollo-PNC-algorithm-analysis/blob/main/planning%E6%A8%A1%E5%9D%97(5)-%E5%8F%82%E8%80%83%E7%BA%BF%E7%9A%84%E5%B9%B3%E6%BB%91.md)上一篇已经介绍了采样点生成锚点数据的过程,并且将所有采样点生成的锚点数据设置到了平滑器中.接下来继续介绍使用二次规划平滑参考线的算法过程.
 
 ```cpp
   if (!smoother_->Smooth(raw_reference_line, reference_line)) {
