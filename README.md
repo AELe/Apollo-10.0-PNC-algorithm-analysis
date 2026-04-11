@@ -49,4 +49,3 @@ Apollo10.0规划控制算法详解目录
 
 [planning模块(17)-速度二次规划优化算法(piecewise jerk speed optimizer)](http://hardpurus.site/archives/wei-ming-ming-wen-zhang-NP4VmMnG)
 
-[QA提交](https://github.com/AELe/Apollo-PNC-algorithm-analysis)
